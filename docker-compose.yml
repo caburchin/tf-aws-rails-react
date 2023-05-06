@@ -1,0 +1,63 @@
+version: "3"
+services:
+  db:
+    image: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+
+  redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+    volumes:
+      - ./data/redis:/data
+
+  web: &app_base
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile
+    command:
+      - /bin/bash
+      - -c
+      - rm -f ./tmp/pids/server.pid ; PATH=$$PWD/bin:$PATH ; rake -T > /dev/null 2>&1 & bundle && rails s
+    volumes:
+      - bundle:/usr/local/bundle:delegated
+    ports:
+      - "3000:3000"
+    tty: true
+    stdin_open: true
+    environment:
+      - PORT=3000
+      - BINDING=0.0.0.0
+      - EDITOR=vi
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD
+      - DATABASE_PORT=5432
+      - DATABASE_HOST=db
+      - REDIS_URL=redis://redis:6379/0
+      - WEBPACK_DEV_SERVER_HOST=dev_server
+      - WEBPACK_DEV_SERVER_PORT=3035
+      - DOMAIN=localhost:3000
+    depends_on:
+      - db
+      - redis
+
+  dev_server:
+    build:
+      context: .
+      dockerfile: ./docker/frontend/Dockerfile
+    volumes:
+      - yarn-cache:/usr/local/share/.cache/yarn/v6:delegated
+    ports:
+      - 3035:3035
+    command: bash -c "yarn --prefer-offline && yarn webpack-dev-server"
+
+volumes:
+  db_data:
+  bundle:
+  node_modules:
+  yarn-cache:
