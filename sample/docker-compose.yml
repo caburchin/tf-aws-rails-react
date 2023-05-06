@@ -25,6 +25,7 @@ services:
       - -c
       - rm -f ./tmp/pids/server.pid ; PATH=$$PWD/bin:$PATH ; rake -T > /dev/null 2>&1 & bundle && rails s
     volumes:
+      - .:/sample:cached
       - bundle:/usr/local/bundle:delegated
     ports:
       - "3000:3000"
@@ -51,6 +52,7 @@ services:
       context: .
       dockerfile: ./docker/frontend/Dockerfile
     volumes:
+      - ./front:/front:cached
       - yarn-cache:/usr/local/share/.cache/yarn/v6:delegated
     ports:
       - 3035:3035

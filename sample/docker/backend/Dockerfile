@@ -11,7 +11,6 @@ RUN sed -i.bak -e "s;http://httpredir.debian.org/debian;http://ftp.jaist.ac.jp/p
 WORKDIR /sample
 COPY Gemfile /sample/
 COPY Gemfile.lock /sample/
-COPY .fonts/* /usr/share/fonts/
 RUN bundle install -j4 --retry 3 &&\
     rm -rf /usr/local/bundle/cache/*.gem &&\
     find /usr/local/bundle/gems/ -name "*.c" -delete &&\
